@@ -44,21 +44,37 @@ echo "  GPU Model: $gpu_model"
 echo "  SM Version: $sm_version"
 echo "  Nominal Frequency: $nominal_freq MHz"
 
-# Pause and confirm whether to continue
-echo "Do you want to proceed with setting the GPU frequency? (yes/no)"
-read user_input
-if [ "$user_input" != "yes" ]; then
+# Pause and confirm whether the information is correct
+echo "Do you confirm that the information is correct? (yes/no)"
+read user_confirmation
+if [ "$user_confirmation" != "yes" ]; then
     echo "Operation aborted by user."
     exit 0
 fi
 
-# Lock GPU to nominal frequency
-echo "Locking GPU frequency to: $nominal_freq MHz"
-set_gpu_frequency() {
-    freq=$1
-    sudo nvidia-smi -lgc "$freq" "$freq"
-}
-set_gpu_frequency "$nominal_freq"
+# Additional step: Ask whether to lock the GPU frequency
+echo "Do you want to lock the GPU frequency to $nominal_freq MHz? (yes/no)"
+read lock_frequency_confirmation
+
+if [ "$lock_frequency_confirmation" = "yes" ]; then
+    # Enable persistent mode and lock GPU frequency
+    echo "Enabling persistent mode and locking GPU frequency."
+    set_gpu_frequency() {
+        freq=$1
+        sudo nvidia-smi -pm 1 # Enable persistent mode
+        # Optionally set power limit if necessary (commented out, user can enable if needed)
+        # sudo nvidia-smi -pl [power_limit_value]
+        sudo nvidia-smi -lgc "$freq" "$freq" # Lock GPU frequency
+    }
+    set_gpu_frequency "$nominal_freq"
+
+    # Function to unlock GPU frequency
+    reset_gpu_frequency() {
+        sudo nvidia-smi -rgc # Unlock GPU frequency
+    }
+else
+    echo "Skipping GPU frequency lock as per user request."
+fi
 
 max=8
 THIS_DIR=$(cd "$(dirname "$0")" && pwd)
@@ -81,12 +97,8 @@ while [ "$i" -le "$max" ]; do
     i=$((i + 1))
 done
 
-# Function to unlock GPU frequency
-reset_gpu_frequency() {
-    sudo nvidia-smi -rgc
-}
-
-# Unlock GPU frequency
-echo "Unlocking GPU frequency"
-reset_gpu_frequency
-
+# If the GPU frequency was locked, unlock it
+if [ "$lock_frequency_confirmation" = "yes" ]; then
+    echo "Unlocking GPU frequency"
+    reset_gpu_frequency
+fi
