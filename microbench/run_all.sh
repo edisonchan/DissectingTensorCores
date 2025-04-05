@@ -56,7 +56,7 @@ fi
 echo "Locking GPU frequency to: $nominal_freq MHz"
 set_gpu_frequency() {
     freq=$1
-    nvidia-smi -lgc "$freq" "$freq"
+    sudo nvidia-smi -lgc "$freq" "$freq"
 }
 set_gpu_frequency "$nominal_freq"
 
@@ -83,7 +83,7 @@ done
 
 # Function to unlock GPU frequency
 reset_gpu_frequency() {
-    nvidia-smi -rgc
+    sudo nvidia-smi -rgc
 }
 
 # Unlock GPU frequency
