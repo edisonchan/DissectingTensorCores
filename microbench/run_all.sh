@@ -38,6 +38,9 @@ gpu_model=$(get_gpu_model_with_underscore)
 sm_version=$(get_gpu_sm_version)
 nominal_freq=$(get_gpu_nominal_frequency)
 
+# Export TargetSM
+export TargetSM="$sm_version"
+
 # Display collected information
 echo "Collected GPU Information:"
 echo "  GPU Model: $gpu_model"
