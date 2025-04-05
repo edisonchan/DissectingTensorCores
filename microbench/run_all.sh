@@ -3,7 +3,7 @@
 # Function to get GPU model and replace spaces with underscores
 get_gpu_model_with_underscore() {
     device_query_output=$($CUDAToolkit_ROOT/extras/demo_suite/deviceQuery 2>/dev/null)
-    gpu_model=$(echo "$device_query_output" | awk -F': ' '/Device 0:/ {print $2}' | sed 's/ /_/g')
+    gpu_model=$(echo "$device_query_output" | awk -F': ' '/Device 0:/ {print $2}' | sed 's/ /_/g' | tr -d '"')
     if [ -z "$gpu_model" ]; then
         echo "Failed to parse GPU model from deviceQuery. Please confirm that the CUDA environment is correctly configured."
         exit 1
